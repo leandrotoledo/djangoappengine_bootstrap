@@ -1,7 +1,7 @@
 h1. djangoappengine_bootstrap
 
 Script to build a complete but simple test project running on
-"djangoappengine":app / "django-nonrel":nonrel with all deps bundled within.
+djangoappengine / django-nonrel with all deps bundled within.
 
 A little advice is use Python 2.5 for Google App Engine, so, if you
 use Ubuntu 11.04, that script suggests an installation from a PPA.
