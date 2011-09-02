@@ -1,92 +1,152 @@
 #!/bin/bash
 
-WGET="wget -q -c"
-TEMPDL="/tmp/daeb"
-TEMP="/tmp/djangoappengine_bootstrap"
-DLTYPE="tar.gz"
+PYTHON_VERSION="python2.5"
 
-die () {
+TEMP_DIR="/tmp/djangoappengine_bootstrap"
+DOWNLOAD_DIR="/tmp/djangoappengine_bootstrap_downloads"
+
+WGET="wget -q -c"
+
+test() {
+    # Python 2.5
+    if [ -z $(which $PYTHON_VERSION) ]; then
+        echo "No $PYTHON_VERSION version found."
+        if [[ $(lsb_release -c | awk '{print $2}') = 'natty' ]]; then
+            # http://dewbot.posterous.com/installation-of-python-25-and-google-app-engi
+            echo "You might install from a ppa-repository."
+            echo -n "Would you like to install? [y/N] "
+            read q1
+
+            if [[ "$q1" = 'y' ]] || [[ $q1 = 'Y' ]]; then
+                echo "Adding ppa-repository..."
+                sudo add-apt-repository ppa:fkrull/deadsnakes >/dev/null 2>&1
+                echo "Updating..."
+                sudo apt-get -qq update
+                echo "Downloading..."
+                sudo apt-get -qq -y install $PYTHON_VERSION
+            else
+                echo "Bye."
+                exit
+            fi
+        fi
+    fi
+
     echo
-    echo "An error occurred. Please see above."
-    echo
-    exit 1
 }
 
-echo
-echo "Downloading..."
-mkdir -p $TEMPDL >/dev/null 2>&1
-cd $TEMPDL || die
-echo "django-testapp"
-$WGET https://bitbucket.org/wkornewald/django-testapp/get/tip.$DLTYPE -O django-testapp.$DLTYPE || die
-echo "django-nonrel"
-$WGET https://bitbucket.org/wkornewald/django-nonrel/get/tip.$DLTYPE -O django-nonrel.$DLTYPE || die
-echo "djangoappengine"
-$WGET https://bitbucket.org/wkornewald/djangoappengine/get/tip.$DLTYPE -O djangoappengine.$DLTYPE || die
-echo "djangotoolbox"
-$WGET https://bitbucket.org/wkornewald/djangotoolbox/get/tip.$DLTYPE -O djangotoolbox.$DLTYPE || die
-echo "django-dbindexer"
-$WGET https://bitbucket.org/wkornewald/django-dbindexer/get/tip.$DLTYPE -O django-dbindexer.$DLTYPE || die
-echo "nonrel-search"
-$WGET https://bitbucket.org/twanschik/nonrel-search/get/tip.$DLTYPE -O nonrel-search.$DLTYPE || die
-echo "django-permission-backend-nonrel"
-$WGET https://bitbucket.org/fhahn/django-permission-backend-nonrel/get/tip.$DLTYPE -O django-permission-backend-nonrel.$DLTYPE || die
+download() {
+    echo "Downloading (may take a while)..."
+    mkdir -p $DOWNLOAD_DIR
 
-echo
-echo "Extracting..."
-for f in *.$DLTYPE
-do
-    echo "$f"
+    while read line
+    do
+        $WGET $line
+        mv *.tar.gz $DOWNLOAD_DIR
+    done < "download.list"
 
-    # DLTYPE zip
-    #unzip -q -o $f || die
+    echo
+}
 
-    # DLTYPE tar.gz
-    tar xzmf $f || die
+extract() {
+    echo "Extracting..."
+    cd $DOWNLOAD_DIR
 
-    # DLTYPE tar.bz2
-    #tar xjmf $f || die
-done
+    for f in *.tar.gz
+    do
+        echo $f
+        tar zxmf $f
+    done
 
-echo
-echo "Copying..."
-mkdir -p $TEMP >/dev/null 2>&1
-echo "django-testapp"
-cp -a wkornewald-django-testapp-*/* $TEMP || die
-echo "django-nonrel"
-cp -a wkornewald-django-nonrel-*/django $TEMP || die
-echo "djangoappengine"
-mkdir -p $TEMP/djangoappengine >/dev/null 2>&1
-cp -a wkornewald-djangoappengine-*/* $TEMP/djangoappengine || die
-echo "djangotoolbox"
-cp -a wkornewald-djangotoolbox-*/djangotoolbox $TEMP || die
-echo "django-dbindexer"
-cp -a wkornewald-django-dbindexer-*/dbindexer $TEMP || die
-echo "nonrel-search"
-cp -a twanschik-nonrel-search-*/search $TEMP || die
-echo "django-permission-backend-nonrel"
-cp -a fhahn-django-permission-backend-nonrel-*/permission_backend_nonrel $TEMP || die
+    echo
+}
 
-echo
-echo "Done."
-sleep 1
+copy() {
+    echo "Copying..."
+    mkdir -p $TEMP_DIR
+    cd $TEMP_DIR
 
-echo "
-############################################################################
-# djangoappengine sample app is available at:
-    $TEMP
+    echo "django-testapp"
+    cp -a $DOWNLOAD_DIR/wkornewald-django-testapp-*/* $TEMP_DIR
 
-# If you want to setup Django's Admin:
-    cat admin/settings.py > $TEMP/settings.py
-    cat admin/urls.py > $TEMP/urls.py
+    echo "django-nonrel"
+    cp -a $DOWNLOAD_DIR/wkornewald-django-nonrel-*/django $TEMP_DIR
 
-# Using:
-    export PATH=\$PATH:/usr/google_appengine
-    cd $TEMP
-    # Fix your \"app.yaml\" and then:
-    python2.5 manage.py createsuperuser
-    python2.5 manage.py syncdb
-    python2.5 manage.py runserver
-    appcfg.py update_indexes .
-    python2.5 manage.py deploy
-    python2.5 manage.py remote ...
-############################################################################"
+    echo "djangoappengine"
+    mkdir -p $TEMP_DIR/djangoappengine
+    cp -a $DOWNLOAD_DIR/wkornewald-djangoappengine-*/* $TEMP_DIR/djangoappengine
+
+    echo "djangotoolbox"
+    cp -a $DOWNLOAD_DIR/wkornewald-djangotoolbox-*/djangotoolbox $TEMP_DIR
+
+    echo "django-dbindexer"
+    cp -a $DOWNLOAD_DIR/wkornewald-django-dbindexer-*/dbindexer $TEMP_DIR
+
+    echo "django-autoload"
+    cp -a $DOWNLOAD_DIR/twanschik-django-autoload-*/autoload $TEMP_DIR
+
+    echo "nonrel-search"
+    cp -a $DOWNLOAD_DIR/twanschik-nonrel-search-*/search $TEMP_DIR
+
+    echo "django-permission-backend-nonrel"
+    cp -a $DOWNLOAD_DIR/fhahn-django-permission-backend-nonrel-*/permission_backend_nonrel $TEMP_DIR
+
+    echo "Done."
+}
+
+setup() {
+    echo -n "What is the name of the project on Google App Engine? "
+    read project
+
+    echo -n "Where do you want to copy the new project? (ex.: /home/user/projects) "
+    read workspace
+
+    # Applying patches
+    cat $PWD/admin/settings.py > $TEMP_DIR/settings.py
+    cat $PWD/admin/urls.py > $TEMP_DIR/urls.py
+
+    # Creating directories
+    mkdir -p $workspace/$project
+    cp -a $TEMP_DIR/* $workspace/$project
+    cd $workspace/$project
+
+    # Fixing app.yaml
+    sed -i "s/ctst/$project/g" app.yaml
+    echo -e '\n- url: /static\n  static_dir: static' >> app.yaml
+
+    # Fixing manage.py
+    sed -i "s/python/python2\.5/g" manage.py
+
+    echo -n "Want to create a superuser? [y/N] "
+    read q1
+    if [[ "$q1" = 'y' ]] || [[ $q1 = 'Y' ]]; then
+        python2.5 manage.py createsuperuser
+        python2.5 manage.py syncdb
+    fi
+
+    echo -n "Want to deploy for Google App Engine? [y/N] "
+    read q2
+    if [[ "$q2" = 'y' ]] || [[ $q2 = 'Y' ]]; then
+        appcfg.py update_indexes .
+        python2.5 manage.py deploy
+
+        echo -n "Want to create a remote superuser? [y/N] "
+        read q3
+        if [[ "$q3" = 'y' ]] || [[ $q3 = 'Y' ]]; then
+            python2.5 manage.py remote createsuperuser
+        fi
+    fi
+
+    echo "Done."
+}
+
+clean() {
+    rm -Rf $TEMP_DIR
+    rm -Rf $DOWNLOAD_DIR
+}
+
+test
+download
+extract
+copy
+setup
+clean

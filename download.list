@@ -1,0 +1,8 @@
+https://bitbucket.org/wkornewald/django-testapp/get/tip.tar.gz -O django-testapp.tar.gz
+https://bitbucket.org/wkornewald/django-nonrel/get/tip.tar.gz -O django-nonrel.tar.gz
+https://bitbucket.org/wkornewald/djangoappengine/get/tip.tar.gz -O djangoappengine.tar.gz
+https://bitbucket.org/wkornewald/djangotoolbox/get/tip.tar.gz -O djangotoolbox.tar.gz
+https://bitbucket.org/wkornewald/django-dbindexer/get/tip.tar.gz -O django-dbindexer.tar.gz
+https://bitbucket.org/twanschik/django-autoload/get/tip.tar.gz -O django-autoload.tar.gz
+https://bitbucket.org/twanschik/nonrel-search/get/tip.tar.gz -O nonrel-search.tar.gz
+https://github.com/fhahn/django-permission-backend-nonrel/tarball/master -O django-permission-backend-nonrel.tar.gz
