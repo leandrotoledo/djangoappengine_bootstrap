@@ -2,6 +2,7 @@
 
 PYTHON_VERSION="python2.5"
 
+BASEDIR=$(pwd)
 TEMP_DIR="/tmp/djangoappengine_bootstrap"
 DOWNLOAD_DIR="/tmp/djangoappengine_bootstrap_downloads"
 
@@ -101,8 +102,8 @@ setup() {
     read workspace
 
     # Applying patches
-    cat $PWD/admin/settings.py > $TEMP_DIR/settings.py
-    cat $PWD/admin/urls.py > $TEMP_DIR/urls.py
+    cat $BASEDIR/admin/settings.py > $TEMP_DIR/settings.py
+    cat $BASEDIR/admin/urls.py > $TEMP_DIR/urls.py
 
     # Creating directories
     mkdir -p $workspace/$project
@@ -112,6 +113,7 @@ setup() {
     # Fixing app.yaml
     sed -i "s/ctst/$project/g" app.yaml
     echo -e '\n- url: /static\n  static_dir: static' >> app.yaml
+    mkdir static
 
     # Fixing manage.py
     sed -i "s/python/python2\.5/g" manage.py
