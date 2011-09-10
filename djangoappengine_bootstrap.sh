@@ -112,7 +112,7 @@ setup() {
 
     # Fixing app.yaml
     sed -i "s/ctst/$project/g" app.yaml
-    echo -e '\n- url: /static\n  static_dir: static' >> app.yaml
+    sed -i "/  expiration: '0'/ a\ \n- url: /static\n  static_dir: static" app.yaml
     mkdir static
 
     # Fixing manage.py
